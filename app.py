@@ -24,6 +24,9 @@ MESSAGES_FILE = os.path.join(DATA_FOLDER, 'messages.json')
 # --- Blacklist ---
 BLACKLIST = ["Zach", "Creator", "Owner", "Admin123", "Administrator", "Root", "God", "Mod"]
 
+# --- MOD List (Easy to edit / CTRL+F) ---
+MODS = ['Daisy', 'Admin']  # Add usernames here to automatically tag them as mods
+
 # --- Helper functions ---
 def load_json(path):
     if os.path.exists(path):
@@ -55,14 +58,21 @@ for p in posts:
     if 'comments' not in p:
         p['comments'] = []
 
-# --- Profile pic helper ---
+# --- Profile pic & display name helpers ---
 @app.context_processor
 def utility_processor():
     def get_profile_pic(username):
         if users.get(username) and users[username].get('profile_pic'):
             return url_for('static', filename='profile_pics/' + users[username]['profile_pic'])
         return url_for('static', filename='profile_pics/default.png')
-    return dict(get_profile_pic=get_profile_pic)
+
+    # Display name with MOD tag if user is in MODS
+    def display_name(username):
+        if username in MODS:
+            return f"{username} [MOD]"
+        return username
+
+    return dict(get_profile_pic=get_profile_pic, display_name=display_name)
 
 # --- Routes ---
 @app.route('/')
@@ -240,14 +250,30 @@ def comment_post(post_id):
             save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
+# --- Delete post logic with Admin/Daisy/own rules ---
 @app.route('/delete_post/<int:post_id>')
 def delete_post(post_id):
     if 'user' not in session:
         return redirect(url_for('login'))
+
     post = get_post(post_id)
-    if post and (post['author'] == session['user'] or session['user'] == 'Admin'):
-        posts.remove(post)
-        save_json(POSTS_FILE, {'posts': posts})
+    current_user = session['user']
+
+    if post:
+        # Admin can delete any post
+        if current_user == 'Admin':
+            posts.remove(post)
+        # Daisy can delete anyone except Admin
+        elif current_user == 'Daisy' and post['author'] != 'Admin':
+            posts.remove(post)
+        # Users can delete their own posts
+        elif post['author'] == current_user:
+            posts.remove(post)
+
+        # Save changes if a post was removed
+        if post not in posts:
+            save_json(POSTS_FILE, {'posts': posts})
+
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
