@@ -1,8 +1,8 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.utils import secure_filename
-from PIL import Image  # Pillow for image handling
+from PIL import Image
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -10,26 +10,20 @@ app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 app.config['POST_IMAGE_FOLDER'] = 'static/post_images'
 DATA_FOLDER = 'data'
 
-# Ensure folders exist
 os.makedirs(DATA_FOLDER, exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['POST_IMAGE_FOLDER'], exist_ok=True)
 
-# --- Data file paths ---
 USERS_FILE = os.path.join(DATA_FOLDER, 'users.json')
 POSTS_FILE = os.path.join(DATA_FOLDER, 'posts.json')
 FOLLOWERS_FILE = os.path.join(DATA_FOLDER, 'followers.json')
 MESSAGES_FILE = os.path.join(DATA_FOLDER, 'messages.json')
 
-# --- Blacklist ---
 BLACKLIST = ["Zach", "Creator", "Owner", "Admin123", "Administrator", "Root", "God", "Mod"]
+MODS = ['terminator', 'Admin']
 
-# --- MOD List (Easy to edit / CTRL+F) ---
-MODS = ['terminator', 'Admin']  # Add usernames here to automatically tag them as mods
-
-# --- Helper functions ---
 def load_json(path):
-    if os.path.exists(path):
+    if os.path.exists(path) and os.path.getsize(path) > 0:
         with open(path, 'r') as f:
             return json.load(f)
     return {}
@@ -38,14 +32,14 @@ def save_json(path, data):
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
 
-# --- Load data ---
+# --- Load all data ---
 users = load_json(USERS_FILE)
 posts_data = load_json(POSTS_FILE)
 posts = posts_data.get('posts', [])
 followers = load_json(FOLLOWERS_FILE)
 messages = load_json(MESSAGES_FILE)
 
-# Assign IDs to posts if missing
+# Ensure posts have IDs, likes, comments
 next_id = 1
 for p in posts:
     if 'id' not in p:
@@ -58,7 +52,6 @@ for p in posts:
     if 'comments' not in p:
         p['comments'] = []
 
-# --- Profile pic & display name helpers ---
 @app.context_processor
 def utility_processor():
     def get_profile_pic(username):
@@ -66,7 +59,6 @@ def utility_processor():
             return url_for('static', filename='profile_pics/' + users[username]['profile_pic'])
         return url_for('static', filename='profile_pics/default.png')
 
-    # Display name with MOD tag if user is in MODS
     def display_name(username):
         if username in MODS:
             return f"{username} [MOD]"
@@ -74,7 +66,6 @@ def utility_processor():
 
     return dict(get_profile_pic=get_profile_pic, display_name=display_name)
 
-# --- Routes ---
 @app.route('/')
 def index():
     if 'user' in session:
@@ -83,6 +74,12 @@ def index():
         return render_template('index.html', user=username, feed=feed)
     return redirect(url_for('login'))
 
+@app.route('/posts')
+def fetch_posts():
+    """Return JSON of the latest posts for AJAX refresh"""
+    return jsonify(posts)
+
+# --- Signup/Login/Logout ---
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -119,13 +116,15 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
+# --- Profile ---
 @app.route('/profile/<username>')
 def profile(username):
     if username not in users:
         return "User not found"
     user_data = users[username]
     user_followers = [u for u, f in followers.items() if username in f]
-    return render_template('profile.html', user=username, data=user_data, followers=user_followers)
+    feed = sorted(posts, key=lambda x: x['id'], reverse=True)
+    return render_template('profile.html', user=username, data=user_data, followers=user_followers, feed=feed)
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -135,25 +134,21 @@ def edit_profile():
     if request.method == 'POST':
         bio = request.form['bio']
         users[username]['bio'] = bio
-
         if 'profile_pic' in request.files:
             pic = request.files['profile_pic']
             if pic.filename != '':
                 filename = secure_filename(username + "_" + pic.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 pic.save(filepath)
-
-                # Resize profile pic to 40x40 using modern Pillow
                 img = Image.open(filepath)
                 img = img.resize((40, 40), Image.Resampling.LANCZOS)
                 img.save(filepath)
-
                 users[username]['profile_pic'] = filename
-
         save_json(USERS_FILE, users)
         return redirect(url_for('profile', username=username))
     return render_template('edit_profile.html', data=users[username])
 
+# --- Follow/DM ---
 @app.route('/follow/<username>')
 def follow(username):
     if 'user' not in session:
@@ -181,7 +176,7 @@ def dm(username):
     dm_list = [m for m in messages[username] if m['from'] == username or m['from'] == sender]
     return render_template('dm.html', chat_with=username, messages=dm_list)
 
-# --- Post helper ---
+# --- Posts ---
 def get_post(post_id):
     for p in posts:
         if p['id'] == post_id:
@@ -202,12 +197,9 @@ def create_post():
             filename = secure_filename(session['user'] + "_" + pic.filename)
             filepath = os.path.join(app.config['POST_IMAGE_FOLDER'], filename)
             pic.save(filepath)
-
-            # Resize post image to max width 600px while keeping aspect ratio
             img = Image.open(filepath)
             img.thumbnail((600, 600), Image.Resampling.LANCZOS)
             img.save(filepath)
-
             image_file = filename
 
     if content or image_file:
@@ -250,7 +242,6 @@ def comment_post(post_id):
             save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
-# --- Delete post logic with Admin/Daisy/own rules ---
 @app.route('/delete_post/<int:post_id>')
 def delete_post(post_id):
     if 'user' not in session:
@@ -260,17 +251,13 @@ def delete_post(post_id):
     current_user = session['user']
 
     if post:
-        # Admin can delete any post
         if current_user == 'Admin':
             posts.remove(post)
-        # Daisy can delete anyone except Admin
-        elif current_user == 'Daisy' and post['author'] != 'Admin':
+        elif current_user == 'terminator' and post['author'] != 'Admin':
             posts.remove(post)
-        # Users can delete their own posts
         elif post['author'] == current_user:
             posts.remove(post)
 
-        # Save changes if a post was removed
         if post not in posts:
             save_json(POSTS_FILE, {'posts': posts})
 
