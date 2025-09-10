@@ -1,13 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>{{ user }}</h2>
+<h2>{{ display_name(user) }}</h2>
+
 {% if data.profile_pic %}
 <img src="{{ url_for('static', filename='profile_pics/' + data.profile_pic) }}" width="100">
 {% else %}
 <p>No profile picture</p>
 {% endif %}
+
 <p>{{ data.bio }}</p>
 <p>Followers: {{ followers|length }}</p>
+
+{% if followers %}
+<ul>
+    {% for follower in followers %}
+    <li>{{ display_name(follower) }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% if 'user' in session and session['user'] != user %}
 <a href="{{ url_for('follow', username=user) }}">Follow</a> |
 <a href="{{ url_for('dm', username=user) }}">Message</a>
