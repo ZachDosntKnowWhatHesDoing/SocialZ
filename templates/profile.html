@@ -15,7 +15,7 @@
 {% if followers %}
 <ul>
     {% for follower in followers %}
-    <li>{{ display_name(follower) }}</li>
+    <li><a href="{{ url_for('profile', username=follower) }}">{{ display_name(follower) }}</a></li>
     {% endfor %}
 </ul>
 {% endif %}
