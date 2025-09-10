@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <h2>{{ display_name(user) }}</h2>
 
 {% if data.profile_pic %}
@@ -9,8 +10,8 @@
 {% endif %}
 
 <p>{{ data.bio }}</p>
-<p>Followers: {{ followers|length }}</p>
 
+<p>Followers: {{ followers|length }}</p>
 {% if followers %}
 <ul>
     {% for follower in followers %}
@@ -23,4 +24,53 @@
 <a href="{{ url_for('follow', username=user) }}">Follow</a> |
 <a href="{{ url_for('dm', username=user) }}">Message</a>
 {% endif %}
+
+<!-- Show this user’s posts on their profile -->
+<h3>{{ display_name(user) }}'s Posts</h3>
+{% for post in feed %}
+    {% if post.author == user %}
+    <div class="post-card">
+        <div class="post-header">
+            <img src="{{ get_profile_pic(post.author) }}" class="pfp-small">
+            <strong>{{ display_name(post.author) }}</strong>
+        </div>
+
+        {% if post.content %}
+        <div class="post-content">{{ post.content }}</div>
+        {% endif %}
+
+        {% if post.image %}
+        <img src="{{ url_for('static', filename='profile_pics/' + post.image) }}" class="post-image">
+        {% endif %}
+
+        <div class="post-actions">
+            <form action="{{ url_for('like_post', post_id=post.id) }}" method="get" style="display:inline;">
+                <button type="submit">❤️ Like ({{ post.likes|length }})</button>
+            </form>
+            {% if session['user'] == 'Admin' or post.author == session['user'] or (session['user'] == 'Daisy' and post.author != 'Admin') %}
+            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="get" style="display:inline;">
+                <button type="submit">🗑 Delete</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Comments section -->
+        <div class="comments">
+            {% for comment in post.comments %}
+            <div class="comment">
+                <img src="{{ get_profile_pic(comment.author) }}" class="pfp-small">
+                <strong>{{ display_name(comment.author) }}</strong>: {{ comment.comment }}
+            </div>
+            {% endfor %}
+            {% if 'user' in session %}
+            <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
+                <input type="text" name="comment" placeholder="Add a comment..." required>
+                <button type="submit">💬 Comment</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
 {% endblock %}
