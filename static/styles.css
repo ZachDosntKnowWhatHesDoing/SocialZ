@@ -1,0 +1,31 @@
+.pfp-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px; /* slightly rounded */
+    object-fit: cover;
+    margin-right: 8px;
+}
+.post-card {
+    background: #0a0f2f; /* dark blue */
+    color: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+.post-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+button {
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-right: 4px;
+    background: #1a3b8a;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #2550c3;
+}

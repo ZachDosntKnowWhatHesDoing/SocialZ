@@ -1,0 +1,61 @@
+{
+    "posts": [
+        {
+            "author": "TestAccount1",
+            "content": "BALLS",
+            "image": null,
+            "id": 1,
+            "likes": [
+                "TestAccount1"
+            ],
+            "comments": []
+        },
+        {
+            "author": "TestAccount1",
+            "content": "Chat rate the pfp",
+            "image": "TestAccount1_494690127_568807742954894_728037580640328747_n.jpg",
+            "id": 2,
+            "likes": [],
+            "comments": []
+        },
+        {
+            "id": 3,
+            "author": "Admin",
+            "content": "Balls?",
+            "image": null,
+            "likes": [],
+            "comments": []
+        },
+        {
+            "id": 4,
+            "author": "Admin",
+            "content": "BALLS!",
+            "image": null,
+            "likes": [],
+            "comments": []
+        },
+        {
+            "id": 5,
+            "author": "TestAccount1",
+            "content": "Sup balls",
+            "image": null,
+            "likes": [
+                "Admin"
+            ],
+            "comments": [
+                {
+                    "author": "Admin",
+                    "comment": "BALLS"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "author": "Admin",
+            "content": "wheres the post",
+            "image": null,
+            "likes": [],
+            "comments": []
+        }
+    ]
+}
