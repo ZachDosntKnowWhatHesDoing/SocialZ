@@ -25,7 +25,7 @@ MESSAGES_FILE = os.path.join(DATA_FOLDER, 'messages.json')
 BLACKLIST = ["Zach", "Creator", "Owner", "Admin123", "Administrator", "Root", "God", "Mod"]
 
 # --- MOD List (Easy to edit / CTRL+F) ---
-MODS = ['Daisy', 'Admin']  # Add usernames here to automatically tag them as mods
+MODS = ['terminator', 'Admin']  # Add usernames here to automatically tag them as mods
 
 # --- Helper functions ---
 def load_json(path):
