@@ -1,149 +1,156 @@
-/* Global */
-body {
+/* ========================
+   Reset some default styles
+======================== */
+* {
     margin: 0;
-    font-family: "Inter", "Segoe UI", sans-serif;
-    background: #0d1117; /* dark background */
-    color: #e6edf3; /* soft white text */
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Navbar */
-nav {
-    background: #161b22;
-    padding: 12px 20px;
+body {
+    background-color: #f5f6fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ========================
+   Header / Navbar
+======================== */
+header {
     display: flex;
-    gap: 16px;
-    border-bottom: 1px solid #30363d;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #2f3640;
+    color: #f5f6fa;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 100;
 }
+
+header .logo {
+    height: 40px; /* Adjust for corner logo */
+    width: auto;
+}
+
 nav a {
-    color: #e6edf3;
     text-decoration: none;
+    color: #f5f6fa;
+    margin-left: 1.5rem;
     font-weight: 500;
-    transition: color 0.2s;
+    transition: color 0.3s;
 }
+
 nav a:hover {
-    color: #58a6ff;
+    color: #00a8ff;
 }
 
-/* Flash messages */
-.flash {
-    list-style: none;
-    margin: 0;
-    padding: 12px 20px;
-    background: #21262d;
-    border-bottom: 1px solid #30363d;
-}
-.flash li {
-    margin: 4px 0;
-    color: #ff7b72; /* reddish accent */
-    font-weight: 500;
-}
-
-/* Feed layout */
-.feed-container {
-    max-width: 600px;
-    margin: 80px auto 40px auto;
-    padding: 0 16px;
-}
-
-/* New post */
-.new-post-card {
-    background: #161b22;
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-.new-post-card textarea,
-.new-post-card input[type="file"] {
-    width: 100%;
-    margin-bottom: 10px;
-    border: 1px solid #30363d;
-    background: #0d1117;
-    color: #e6edf3;
-    padding: 8px;
-    border-radius: 8px;
-}
-.new-post-card textarea:focus {
-    outline: 1px solid #58a6ff;
-}
-
-/* Post cards */
-.post-card {
-    background: #161b22;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-.post-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.pfp-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 10px;
-}
-.post-content {
-    margin: 10px 0;
-    line-height: 1.5;
-}
-.post-image {
-    width: 100%;
-    border-radius: 12px;
-    margin-top: 10px;
-    border: 1px solid #30363d;
-}
-
-/* Post actions */
-.post-actions {
-    margin-top: 12px;
-}
-.post-actions button {
-    margin-top: 6px;
-}
-
-/* Comments */
-.comments {
-    margin-top: 14px;
-    border-top: 1px solid #30363d;
-    padding-top: 10px;
-}
-.comment {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.comment strong {
-    margin-right: 6px;
-}
-.comments input[type="text"] {
-    width: 75%;
-    border: 1px solid #30363d;
-    background: #0d1117;
-    color: #e6edf3;
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin-right: 6px;
-}
-
-/* Buttons */
-button {
-    border-radius: 8px;
-    padding: 6px 14px;
-    background: #238636; /* green accent */
-    color: white;
+/* ========================
+   Buttons
+======================== */
+button, .btn {
+    background-color: #00a8ff;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
 }
-button:hover {
-    background: #2ea043;
+
+button:hover, .btn:hover {
+    background-color: #0097e6;
+    transform: translateY(-2px);
+}
+
+button:active, .btn:active {
+    transform: translateY(1px);
+}
+
+/* ========================
+   Cards
+======================== */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* ========================
+   Forms
+======================== */
+input, textarea, select {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #00a8ff;
+}
+
+/* ========================
+   Footer
+======================== */
+footer {
+    background-color: #2f3640;
+    color: #f5f6fa;
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+}
+
+/* ========================
+   Utility classes
+======================== */
+.text-center {
+    text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+
+/* ========================
+   Responsive
+======================== */
+@media screen and (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav a {
+        margin: 0.5rem 0;
+    }
+
+    .card {
+        padding: 1rem;
+    }
 }
