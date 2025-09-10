@@ -17,7 +17,7 @@
     <div class="post-card">
         <div class="post-header">
             <img src="{{ get_profile_pic(post.author) }}" class="pfp-small">
-            <strong>{{ display_name(post.author) }}</strong>
+            <strong><a href="{{ url_for('profile', username=post.author) }}">{{ display_name(post.author) }}</a></strong>
         </div>
 
         {% if post.content %}
@@ -44,7 +44,7 @@
             {% for comment in post.comments %}
             <div class="comment">
                 <img src="{{ get_profile_pic(comment.author) }}" class="pfp-small">
-                <strong>{{ display_name(comment.author) }}</strong>: {{ comment.comment }}
+                <strong><a href="{{ url_for('profile', username=comment.author) }}">{{ display_name(comment.author) }}</a></strong>: {{ comment.comment }}
             </div>
             {% endfor %}
             <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
