@@ -6,17 +6,24 @@
 </head>
 <body>
 <nav>
-    {% if 'user' in session %}
-    <a href="{{ url_for('index') }}">Home</a> |
-    <a href="{{ url_for('profile', username=session['user']) }}">Profile</a> |
-    <a href="{{ url_for('edit_profile') }}">Edit Profile</a> |
-    <a href="{{ url_for('logout') }}">Logout</a>
-    {% else %}
-    <a href="{{ url_for('login') }}">Login</a> |
-    <a href="{{ url_for('signup') }}">Sign Up</a>
-    {% endif %}
+    <div class="nav-left">
+        <a href="{{ url_for('index') }}" class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    <div class="nav-right">
+        {% if 'user' in session %}
+        <a href="{{ url_for('index') }}" class="nav-btn">Home</a>
+        <a href="{{ url_for('profile', username=session['user']) }}" class="nav-btn">Profile</a>
+        <a href="{{ url_for('edit_profile') }}" class="nav-btn">Edit Profile</a>
+        <a href="{{ url_for('logout') }}" class="nav-btn">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="nav-btn">Login</a>
+        <a href="{{ url_for('signup') }}" class="nav-btn">Sign Up</a>
+        {% endif %}
+    </div>
 </nav>
-<hr>
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class="flash">
@@ -26,6 +33,7 @@
     </ul>
   {% endif %}
 {% endwith %}
+
 {% block content %}{% endblock %}
 </body>
 </html>
