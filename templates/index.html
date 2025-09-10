@@ -17,7 +17,7 @@
     <div class="post-card">
         <div class="post-header">
             <img src="{{ get_profile_pic(post.author) }}" class="pfp-small">
-            <strong>{{ post.author }}</strong>
+            <strong>{{ display_name(post.author) }}</strong>
         </div>
 
         {% if post.content %}
@@ -32,7 +32,7 @@
             <form action="{{ url_for('like_post', post_id=post.id) }}" method="get" style="display:inline;">
                 <button type="submit">❤️ Like ({{ post.likes|length }})</button>
             </form>
-            {% if post.author == user or user == 'Admin' %}
+            {% if user == 'Admin' or post.author == user or (user == 'Daisy' and post.author != 'Admin') %}
             <form action="{{ url_for('delete_post', post_id=post.id) }}" method="get" style="display:inline;">
                 <button type="submit">🗑 Delete</button>
             </form>
@@ -44,7 +44,7 @@
             {% for comment in post.comments %}
             <div class="comment">
                 <img src="{{ get_profile_pic(comment.author) }}" class="pfp-small">
-                <strong>{{ comment.author }}</strong>: {{ comment.comment }}
+                <strong>{{ display_name(comment.author) }}</strong>: {{ comment.comment }}
             </div>
             {% endfor %}
             <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
