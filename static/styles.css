@@ -2,8 +2,8 @@
 body {
     margin: 0;
     font-family: "Inter", "Segoe UI", sans-serif;
-    background: #0d1117;
-    color: #e6edf3;
+    background: #0d1117; /* dark background */
+    color: #e6edf3; /* soft white text */
 }
 
 /* Navbar */
@@ -11,36 +11,20 @@ nav {
     background: #161b22;
     padding: 12px 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 16px;
     border-bottom: 1px solid #30363d;
     position: sticky;
     top: 0;
     z-index: 1000;
 }
-
-/* Logo */
-.nav-left img {
-    height: 40px; /* recommended logo size */
-    width: auto;
-}
-
-/* Nav buttons */
-.nav-right {
-    display: flex;
-    gap: 10px;
-}
-.nav-btn {
-    background: #238636;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-weight: 500;
+nav a {
+    color: #e6edf3;
     text-decoration: none;
-    transition: background 0.2s;
+    font-weight: 500;
+    transition: color 0.2s;
 }
-.nav-btn:hover {
-    background: #2ea043;
+nav a:hover {
+    color: #58a6ff;
 }
 
 /* Flash messages */
@@ -53,7 +37,7 @@ nav {
 }
 .flash li {
     margin: 4px 0;
-    color: #ff7b72;
+    color: #ff7b72; /* reddish accent */
     font-weight: 500;
 }
 
@@ -149,11 +133,11 @@ nav {
     margin-right: 6px;
 }
 
-/* Buttons (global) */
+/* Buttons */
 button {
     border-radius: 8px;
     padding: 6px 14px;
-    background: #238636;
+    background: #238636; /* green accent */
     color: white;
     border: none;
     cursor: pointer;
