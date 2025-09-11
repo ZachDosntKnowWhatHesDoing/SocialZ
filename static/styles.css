@@ -1,120 +1,129 @@
-/* --- Global Styles --- */
+/* ---------------- Base Styles ---------------- */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --nav-bg: #f0f0f0;
+    --nav-text: #000000;
+    --card-bg: #ffffff;
+    --card-border: #ddd;
+    --button-bg: #007bff;
+    --button-text: #ffffff;
+    --input-bg: #fff;
+    --input-text: #000;
+}
+
+/* ----- Dark Theme ----- */
+body.dark {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --nav-bg: #1f1f1f;
+    --nav-text: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --card-border: #333;
+    --button-bg: #bb86fc;
+    --button-text: #121212;
+    --input-bg: #1e1e1e;
+    --input-text: #e0e0e0;
+}
+
+/* ----- Sunset Mood ----- */
+body.sunset {
+    --bg-color: linear-gradient(120deg, #ff9a9e, #fad0c4);
+    --text-color: #4b3832;
+    --nav-bg: rgba(255, 152, 152, 0.85);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: #f5c2c7;
+}
+
+/* ----- Ocean Mood ----- */
+body.ocean {
+    --bg-color: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+    --text-color: #0a3d62;
+    --nav-bg: rgba(161, 196, 253, 0.85);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: #7fbfff;
+}
+
+/* ----- Forest Mood ----- */
+body.forest {
+    --bg-color: linear-gradient(120deg, #a8e6cf, #dcedc1);
+    --text-color: #2f4f2f;
+    --nav-bg: rgba(168, 230, 207, 0.85);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: #a8c9a8;
+}
+
+/* ---------------- Body & Layout ---------------- */
 body {
-    font-family: 'Inter', 'Roboto', Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #222;
     margin: 0;
-    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
 }
 
-a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-/* --- Navbar --- */
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #fff;
+    background: var(--nav-bg);
     padding: 10px 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.nav-left .logo img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-}
-
-.nav-right .nav-btn {
+nav a {
+    color: var(--nav-text);
+    text-decoration: none;
     margin-left: 10px;
-    padding: 6px 12px;
-    background-color: #007bff;
-    color: #fff;
+}
+
+nav a.logo img {
+    height: 40px;
+}
+
+/* ---------------- Buttons ---------------- */
+button, input[type="submit"] {
+    background: var(--button-bg);
+    color: var(--button-text);
     border: none;
-    border-radius: 6px;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
-.nav-right .nav-btn:hover {
-    background-color: #0056b3;
+button:hover, input[type="submit"]:hover {
+    opacity: 0.85;
 }
 
-/* --- Flash messages --- */
-.flash {
-    list-style: none;
-    padding: 10px 20px;
-    margin: 10px;
-    background-color: #ffefc1;
-    border-left: 4px solid #ffc107;
-    border-radius: 6px;
+/* ---------------- Forms ---------------- */
+input[type="text"], input[type="password"], textarea, input[type="file"] {
+    background: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid #ccc;
+    padding: 6px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
-.flash li {
-    margin-bottom: 5px;
+textarea {
+    resize: vertical;
 }
 
-/* --- Feed & Post Cards --- */
+/* ---------------- Feed & Posts ---------------- */
 .feed-container {
     max-width: 700px;
     margin: 20px auto;
-    padding: 0 10px;
 }
 
-.new-post-card,
-.post-card {
-    background-color: #fff;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-}
-
-.new-post-card textarea,
-.post-card input[type="text"],
-.edit-profile textarea {
-    width: 100%;
-    padding: 10px;
+.post-card, .new-post-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 15px;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    resize: vertical;
-    font-size: 14px;
+    margin-bottom: 20px;
 }
 
-.new-post-card input[type="file"],
-.edit-profile input[type="file"] {
-    margin-bottom: 10px;
-}
-
-button,
-input[type="submit"] {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s;
-}
-
-button:hover,
-input[type="submit"]:hover {
-    background-color: #0056b3;
-}
-
-/* --- Post structure --- */
 .post-header {
     display: flex;
     align-items: center;
@@ -124,134 +133,81 @@ input[type="submit"]:hover {
 .pfp-small {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 50%;
     object-fit: cover;
     margin-right: 10px;
 }
 
-.post-content {
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
 .post-image {
     max-width: 100%;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
 }
 
-.post-actions form {
-    display: inline;
+.post-actions button {
     margin-right: 5px;
 }
 
 .comments {
     margin-top: 10px;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #ccc;
 }
 
 .comment {
+    margin-bottom: 5px;
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
 }
 
-.comment .pfp-small {
-    width: 30px;
-    height: 30px;
-    margin-right: 8px;
-}
-
-/* --- Profile Page --- */
-.profile-header img {
-    border-radius: 50%;
-}
-
-.profile-actions a {
-    margin-right: 10px;
-    padding: 6px 12px;
-    background-color: #28a745;
-    color: #fff;
-    border-radius: 6px;
-    transition: background 0.3s;
-}
-
-.profile-actions a:hover {
-    background-color: #1e7e34;
-}
-
-/* --- Forms --- */
-form {
-    margin-top: 10px;
-}
-
-/* --- Chat / DM --- */
-.chat-box {
-    background-color: #fff;
-    max-width: 700px;
-    margin: 0 auto 10px auto;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.chat-box p {
-    margin: 5px 0;
-}
-
-/* --- Login & Signup --- */
-form input[type="text"],
-form input[type="password"] {
-    width: 100%;
+/* ---------------- Flash messages ---------------- */
+.flash {
+    list-style-type: none;
     padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    background: #ffdddd;
+    color: #900;
+    max-width: 700px;
+    margin: 20px auto;
+    border-radius: 5px;
 }
 
-/* --- Maintenance Page --- */
-.maintenance-container {
-    max-width: 600px;
-    margin: 100px auto;
-    background: #fff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    text-align: center;
+/* ---------------- Notifications ---------------- */
+.notif-count {
+    background: red;
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: top;
 }
 
-.maintenance-container h1 {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    color: #2c3e50;
+.notifications-page ul {
+    list-style-type: none;
+    padding: 0;
+    max-width: 700px;
+    margin: 20px auto;
 }
 
-.maintenance-container p {
-    font-size: 1.2em;
-    color: #555;
+.notifications-page li {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
-.maintenance-container .logo {
-    width: 120px;
-    margin-bottom: 30px;
+.notifications-page li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: bold;
 }
 
-/* --- Responsive --- */
-@media (max-width: 768px) {
-    .feed-container,
-    .chat-box {
-        padding: 0 10px;
+/* ---------------- Responsive ---------------- */
+@media screen and (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
     }
-
-    .nav-right {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .nav-right .nav-btn {
-        margin-top: 5px;
+    nav .nav-right {
+        margin-top: 10px;
     }
 }
