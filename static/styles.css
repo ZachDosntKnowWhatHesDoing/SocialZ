@@ -1,156 +1,257 @@
-/* ========================
-   Reset some default styles
-======================== */
-* {
+/* --- Global Styles --- */
+body {
+    font-family: 'Inter', 'Roboto', Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #222;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body {
-    background-color: #f5f6fa;
-    color: #333;
-    line-height: 1.6;
+a {
+    color: #007bff;
+    text-decoration: none;
 }
 
-/* ========================
-   Header / Navbar
-======================== */
-header {
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Navbar --- */
+nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    background-color: #2f3640;
-    color: #f5f6fa;
+    background-color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
 }
 
-header .logo {
-    height: 40px; /* Adjust for corner logo */
-    width: auto;
+.nav-left .logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
-nav a {
-    text-decoration: none;
-    color: #f5f6fa;
-    margin-left: 1.5rem;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-nav a:hover {
-    color: #00a8ff;
-}
-
-/* ========================
-   Buttons
-======================== */
-button, .btn {
-    background-color: #00a8ff;
+.nav-right .nav-btn {
+    margin-left: 10px;
+    padding: 6px 12px;
+    background-color: #007bff;
     color: #fff;
-    padding: 0.6rem 1.2rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background 0.3s;
 }
 
-button:hover, .btn:hover {
-    background-color: #0097e6;
-    transform: translateY(-2px);
+.nav-right .nav-btn:hover {
+    background-color: #0056b3;
 }
 
-button:active, .btn:active {
-    transform: translateY(1px);
+/* --- Flash messages --- */
+.flash {
+    list-style: none;
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #ffefc1;
+    border-left: 4px solid #ffc107;
+    border-radius: 6px;
 }
 
-/* ========================
-   Cards
-======================== */
-.card {
+.flash li {
+    margin-bottom: 5px;
+}
+
+/* --- Feed & Post Cards --- */
+.feed-container {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 0 10px;
+}
+
+.new-post-card,
+.post-card {
     background-color: #fff;
+    padding: 15px 20px;
+    margin-bottom: 20px;
     border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-}
-
-/* ========================
-   Forms
-======================== */
-input, textarea, select {
+.new-post-card textarea,
+.post-card input[type="text"],
+.edit-profile textarea {
     width: 100%;
-    padding: 0.6rem 1rem;
-    margin-bottom: 1rem;
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 1rem;
+    margin-bottom: 10px;
+    resize: vertical;
+    font-size: 14px;
 }
 
-input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: #00a8ff;
+.new-post-card input[type="file"],
+.edit-profile input[type="file"] {
+    margin-bottom: 10px;
 }
 
-/* ========================
-   Footer
-======================== */
-footer {
-    background-color: #2f3640;
-    color: #f5f6fa;
-    text-align: center;
-    padding: 2rem 1rem;
-    margin-top: 2rem;
+button,
+input[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
 }
 
-/* ========================
-   Utility classes
-======================== */
-.text-center {
-    text-align: center;
+button:hover,
+input[type="submit"]:hover {
+    background-color: #0056b3;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.flex {
+/* --- Post structure --- */
+.post-header {
     display: flex;
     align-items: center;
-    justify-content: center;
+    margin-bottom: 10px;
 }
 
-.mt-1 { margin-top: 1rem; }
-.mt-2 { margin-top: 2rem; }
-.mb-1 { margin-bottom: 1rem; }
-.mb-2 { margin-bottom: 2rem; }
+.pfp-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 10px;
+}
 
-/* ========================
-   Responsive
-======================== */
-@media screen and (max-width: 768px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
+.post-content {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.post-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.post-actions form {
+    display: inline;
+    margin-right: 5px;
+}
+
+.comments {
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.comment {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.comment .pfp-small {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+}
+
+/* --- Profile Page --- */
+.profile-header img {
+    border-radius: 50%;
+}
+
+.profile-actions a {
+    margin-right: 10px;
+    padding: 6px 12px;
+    background-color: #28a745;
+    color: #fff;
+    border-radius: 6px;
+    transition: background 0.3s;
+}
+
+.profile-actions a:hover {
+    background-color: #1e7e34;
+}
+
+/* --- Forms --- */
+form {
+    margin-top: 10px;
+}
+
+/* --- Chat / DM --- */
+.chat-box {
+    background-color: #fff;
+    max-width: 700px;
+    margin: 0 auto 10px auto;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.chat-box p {
+    margin: 5px 0;
+}
+
+/* --- Login & Signup --- */
+form input[type="text"],
+form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* --- Maintenance Page --- */
+.maintenance-container {
+    max-width: 600px;
+    margin: 100px auto;
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.maintenance-container h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.maintenance-container p {
+    font-size: 1.2em;
+    color: #555;
+}
+
+.maintenance-container .logo {
+    width: 120px;
+    margin-bottom: 30px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .feed-container,
+    .chat-box {
+        padding: 0 10px;
     }
 
-    nav a {
-        margin: 0.5rem 0;
+    .nav-right {
+        display: flex;
+        flex-wrap: wrap;
     }
 
-    .card {
-        padding: 1rem;
+    .nav-right .nav-btn {
+        margin-top: 5px;
     }
 }
