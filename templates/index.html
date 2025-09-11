@@ -1,11 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=maintenance.html">
-    <title>Redirecting...</title>
-</head>
-<body>
-    <p>If you are not redirected, <a href="maintenance.html">click here</a>.</p>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="feed-container">
+
+    <!-- Create a new post -->
+    <div class="new-post-card">
+        <form action="{{ url_for('create_post') }}" method="post" enctype="multipart/form-data">
+            <textarea name="content" placeholder="What's on your mind?" rows="3"></textarea>
+            <input type="file" name="post_image" accept="image/*">
+            <button type="submit">Post</button>
+        </form>
+    </div>
+
+    <!-- Display posts -->
+    {% for post in feed %}
+    <div class="post-card">
+        <div class="post-header">
+            <img src="{{ get_profile_pic(post.author) }}" class="pfp-small">
+            <strong><a href="{{ url_for('profile', username=post.author) }}">{{ display_name(post.author) }}</a></strong>
+        </div>
+
+        {% if post.content %}
+        <div class="post-content">{{ post.content }}</div>
+        {% endif %}
+
+        {% if post.image %}
+        <img src="{{ url_for('static', filename='profile_pics/' + post.image) }}" class="post-image">
+        {% endif %}
+
+        <div class="post-actions">
+            <form action="{{ url_for('like_post', post_id=post.id) }}" method="get" style="display:inline;">
+                <button type="submit">❤️ Like ({{ post.likes|length }})</button>
+            </form>
+            {% if user == 'Admin' or post.author == user or (user == 'Daisy' and post.author != 'Admin') %}
+            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="get" style="display:inline;">
+                <button type="submit">🗑 Delete</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Comments section -->
+        <div class="comments">
+            {% for comment in post.comments %}
+            <div class="comment">
+                <img src="{{ get_profile_pic(comment.author) }}" class="pfp-small">
+                <strong><a href="{{ url_for('profile', username=comment.author) }}">{{ display_name(comment.author) }}</a></strong>: {{ comment.comment }}
+            </div>
+            {% endfor %}
+            <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
+                <input type="text" name="comment" placeholder="Add a comment..." required>
+                <button type="submit">💬 Comment</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
