@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Notifications</h2>
+<ul>
+    {% for n in notifications %}
+    <li>
+        {% if n.type == 'like' %}
+            ❤️ {{ n.from }} liked your post <a href="{{ url_for('index') }}#post-{{ n.post_id }}">#{{ n.post_id }}</a>
+        {% elif n.type == 'comment' %}
+            💬 {{ n.from }} commented on your post <a href="{{ url_for('index') }}#post-{{ n.post_id }}">#{{ n.post_id }}</a>
+        {% elif n.type == 'follow' %}
+            👤 {{ n.from }} followed you
+        {% elif n.type == 'dm' %}
+            📩 New message from {{ n.from }} <a href="{{ url_for('dm', username=n.from) }}">View</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
