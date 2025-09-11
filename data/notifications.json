@@ -1,0 +1,6 @@
+{
+    "username1": [
+        {"type": "like", "from": "user2", "post_id": 3, "read": false},
+        {"type": "follow", "from": "user3", "read": false}
+    ]
+}
