@@ -5,6 +5,27 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <script>
+const selector = document.createElement('select');
+selector.id = 'theme-selector';
+selector.innerHTML = `
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+    <option value="sunset">Sunset</option>
+    <option value="ocean">Ocean</option>
+`;
+document.body.prepend(selector);
+
+selector.addEventListener('change', (e) => {
+    document.documentElement.setAttribute('data-theme', e.target.value);
+    localStorage.setItem('theme', e.target.value);
+});
+
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+selector.value = savedTheme;
+</script>
+
 <nav>
     <div class="nav-left">
         <a href="{{ url_for('index') }}" class="logo">
