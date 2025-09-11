@@ -18,10 +18,12 @@ USERS_FILE = os.path.join(DATA_FOLDER, 'users.json')
 POSTS_FILE = os.path.join(DATA_FOLDER, 'posts.json')
 FOLLOWERS_FILE = os.path.join(DATA_FOLDER, 'followers.json')
 MESSAGES_FILE = os.path.join(DATA_FOLDER, 'messages.json')
+NOTIFICATIONS_FILE = os.path.join(DATA_FOLDER, 'notifications.json')
 
 BLACKLIST = ["Zach", "Creator", "Owner", "Admin123", "Administrator", "Root", "God", "Mod"]
 MODS = ['terminator', 'Admin']
 
+# ---------------- JSON helpers -----------------
 def load_json(path):
     if os.path.exists(path) and os.path.getsize(path) > 0:
         with open(path, 'r') as f:
@@ -32,12 +34,13 @@ def save_json(path, data):
     with open(path, 'w') as f:
         json.dump(data, f, indent=4)
 
-# --- Load all data ---
+# ---------------- Load all data -----------------
 users = load_json(USERS_FILE)
 posts_data = load_json(POSTS_FILE)
 posts = posts_data.get('posts', [])
 followers = load_json(FOLLOWERS_FILE)
 messages = load_json(MESSAGES_FILE)
+notifications = load_json(NOTIFICATIONS_FILE)
 
 # Ensure posts have IDs, likes, comments
 next_id = 1
@@ -52,6 +55,11 @@ for p in posts:
     if 'comments' not in p:
         p['comments'] = []
 
+# ---------------- Save notifications -----------------
+def save_notifications():
+    save_json(NOTIFICATIONS_FILE, notifications)
+
+# ---------------- Jinja utils -----------------
 @app.context_processor
 def utility_processor():
     def get_profile_pic(username):
@@ -64,8 +72,9 @@ def utility_processor():
             return f"{username} [MOD]"
         return username
 
-    return dict(get_profile_pic=get_profile_pic, display_name=display_name)
+    return dict(get_profile_pic=get_profile_pic, display_name=display_name, notifications=notifications)
 
+# ---------------- Routes -----------------
 @app.route('/')
 def index():
     if 'user' in session:
@@ -76,10 +85,9 @@ def index():
 
 @app.route('/posts')
 def fetch_posts():
-    """Return JSON of the latest posts for AJAX refresh"""
     return jsonify(posts)
 
-# --- Signup/Login/Logout ---
+# ---------------- Signup/Login/Logout -----------------
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -93,9 +101,11 @@ def signup():
             users[username] = {'password': password, 'profile_pic': None, 'bio': ''}
             followers[username] = []
             messages[username] = []
+            notifications[username] = []
             save_json(USERS_FILE, users)
             save_json(FOLLOWERS_FILE, followers)
             save_json(MESSAGES_FILE, messages)
+            save_notifications()
             session['user'] = username
             return redirect(url_for('index'))
     return render_template('signup.html')
@@ -116,7 +126,7 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
-# --- Profile ---
+# ---------------- Profile -----------------
 @app.route('/profile/<username>')
 def profile(username):
     if username not in users:
@@ -148,7 +158,7 @@ def edit_profile():
         return redirect(url_for('profile', username=username))
     return render_template('edit_profile.html', data=users[username])
 
-# --- Follow/DM ---
+# ---------------- Follow/DM -----------------
 @app.route('/follow/<username>')
 def follow(username):
     if 'user' not in session:
@@ -158,6 +168,15 @@ def follow(username):
         if username not in followers[follower]:
             followers[follower].append(username)
             save_json(FOLLOWERS_FILE, followers)
+
+            # Notify user
+            notifications.setdefault(username, []).append({
+                "type": "follow",
+                "from": follower,
+                "read": False
+            })
+            save_notifications()
+
     return redirect(url_for('profile', username=username))
 
 @app.route('/dm/<username>', methods=['GET', 'POST'])
@@ -172,11 +191,21 @@ def dm(username):
         messages[username].append({'from': sender, 'message': message})
         messages[sender].append({'from': sender, 'message': message})
         save_json(MESSAGES_FILE, messages)
+
+        # Notify receiver
+        if username != sender:
+            notifications.setdefault(username, []).append({
+                "type": "dm",
+                "from": sender,
+                "read": False
+            })
+            save_notifications()
+
         return redirect(url_for('dm', username=username))
     dm_list = [m for m in messages[username] if m['from'] == username or m['from'] == sender]
     return render_template('dm.html', chat_with=username, messages=dm_list)
 
-# --- Posts ---
+# ---------------- Posts -----------------
 def get_post(post_id):
     for p in posts:
         if p['id'] == post_id:
@@ -227,6 +256,17 @@ def like_post(post_id):
             post['likes'].remove(user)
         else:
             post['likes'].append(user)
+
+            # Notify author
+            if post['author'] != user:
+                notifications.setdefault(post['author'], []).append({
+                    "type": "like",
+                    "from": user,
+                    "post_id": post_id,
+                    "read": False
+                })
+                save_notifications()
+
         save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
@@ -239,6 +279,17 @@ def comment_post(post_id):
         comment_text = request.form['comment'].strip()
         if comment_text:
             post['comments'].append({'author': session['user'], 'comment': comment_text})
+
+            # Notify author
+            if post['author'] != session['user']:
+                notifications.setdefault(post['author'], []).append({
+                    "type": "comment",
+                    "from": session['user'],
+                    "post_id": post_id,
+                    "read": False
+                })
+                save_notifications()
+
             save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
@@ -263,5 +314,21 @@ def delete_post(post_id):
 
     return redirect(url_for('index'))
 
+# ---------------- Notifications page -----------------
+@app.route('/notifications')
+def view_notifications():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    user = session['user']
+    user_notifications = notifications.get(user, [])
+
+    # Mark all as read
+    for n in user_notifications:
+        n['read'] = True
+    save_notifications()
+
+    return render_template('notifications.html', notifications=user_notifications)
+
+# ---------------- Run -----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
