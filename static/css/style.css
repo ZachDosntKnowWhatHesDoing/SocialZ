@@ -1,14 +1,80 @@
-/* --- Global Styles --- */
+/* ------------------- THEME VARIABLES ------------------- */
+
+/* Default light theme */
+:root {
+    --bg-color: #f9f9f9;
+    --text-color: #222;
+    --nav-bg: #fff;
+    --nav-text: #007bff;
+    --button-bg: #007bff;
+    --button-hover: #0056b3;
+    --card-bg: #fff;
+    --card-shadow: rgba(0,0,0,0.05);
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --flash-bg: #ffefc1;
+    --flash-border: #ffc107;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #eee;
+    --nav-bg: #1f1f1f;
+    --nav-text: #80dfff;
+    --button-bg: #0099ff;
+    --button-hover: #0066aa;
+    --card-bg: #1e1e1e;
+    --card-shadow: rgba(0,0,0,0.3);
+    --input-bg: #222;
+    --input-border: #555;
+    --flash-bg: #333;
+    --flash-border: #888;
+}
+
+/* Sunset mood theme */
+[data-theme="sunset"] {
+    --bg-color: #ffecd2;
+    --text-color: #6b4226;
+    --nav-bg: #ff7e5f;
+    --nav-text: #fff;
+    --button-bg: #feb47b;
+    --button-hover: #ff6a3d;
+    --card-bg: #fff0e5;
+    --card-shadow: rgba(0,0,0,0.1);
+    --input-bg: #fff5f0;
+    --input-border: #ff7e5f;
+    --flash-bg: #ffe4c4;
+    --flash-border: #ff7e5f;
+}
+
+/* Ocean mood theme */
+[data-theme="ocean"] {
+    --bg-color: #e0f7fa;
+    --text-color: #006064;
+    --nav-bg: #00acc1;
+    --nav-text: #fff;
+    --button-bg: #00bcd4;
+    --button-hover: #0097a7;
+    --card-bg: #e0f7fa;
+    --card-shadow: rgba(0,0,0,0.1);
+    --input-bg: #ffffff;
+    --input-border: #00acc1;
+    --flash-bg: #b2ebf2;
+    --flash-border: #00acc1;
+}
+
+/* ------------------- GLOBAL STYLES ------------------- */
 body {
     font-family: 'Inter', 'Roboto', Arial, sans-serif;
-    background-color: #f9f9f9;
-    color: #222;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 0;
 }
 
 a {
-    color: #007bff;
+    color: var(--nav-text);
     text-decoration: none;
 }
 
@@ -16,12 +82,12 @@ a:hover {
     text-decoration: underline;
 }
 
-/* --- Navbar --- */
+/* ------------------- NAVBAR ------------------- */
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #fff;
+    background-color: var(--nav-bg);
     padding: 10px 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: sticky;
@@ -38,7 +104,7 @@ nav {
 .nav-right .nav-btn {
     margin-left: 10px;
     padding: 6px 12px;
-    background-color: #007bff;
+    background-color: var(--button-bg);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -47,16 +113,16 @@ nav {
 }
 
 .nav-right .nav-btn:hover {
-    background-color: #0056b3;
+    background-color: var(--button-hover);
 }
 
-/* --- Flash messages --- */
+/* ------------------- FLASH MESSAGES ------------------- */
 .flash {
     list-style: none;
     padding: 10px 20px;
     margin: 10px;
-    background-color: #ffefc1;
-    border-left: 4px solid #ffc107;
+    background-color: var(--flash-bg);
+    border-left: 4px solid var(--flash-border);
     border-radius: 6px;
 }
 
@@ -64,7 +130,7 @@ nav {
     margin-bottom: 5px;
 }
 
-/* --- Feed & Post Cards --- */
+/* ------------------- FEED & POST CARDS ------------------- */
 .feed-container {
     max-width: 700px;
     margin: 20px auto;
@@ -73,11 +139,11 @@ nav {
 
 .new-post-card,
 .post-card {
-    background-color: #fff;
+    background-color: var(--card-bg);
     padding: 15px 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px var(--card-shadow);
 }
 
 .new-post-card textarea,
@@ -86,10 +152,12 @@ nav {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     margin-bottom: 10px;
     resize: vertical;
     font-size: 14px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
 }
 
 .new-post-card input[type="file"],
@@ -99,7 +167,7 @@ nav {
 
 button,
 input[type="submit"] {
-    background-color: #007bff;
+    background-color: var(--button-bg);
     color: #fff;
     border: none;
     padding: 8px 14px;
@@ -111,10 +179,10 @@ input[type="submit"] {
 
 button:hover,
 input[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: var(--button-hover);
 }
 
-/* --- Post structure --- */
+/* ------------------- POST STRUCTURE ------------------- */
 .post-header {
     display: flex;
     align-items: center;
@@ -163,7 +231,7 @@ input[type="submit"]:hover {
     margin-right: 8px;
 }
 
-/* --- Profile Page --- */
+/* ------------------- PROFILE PAGE ------------------- */
 .profile-header img {
     border-radius: 50%;
 }
@@ -181,19 +249,19 @@ input[type="submit"]:hover {
     background-color: #1e7e34;
 }
 
-/* --- Forms --- */
+/* ------------------- FORMS ------------------- */
 form {
     margin-top: 10px;
 }
 
-/* --- Chat / DM --- */
+/* ------------------- CHAT / DM ------------------- */
 .chat-box {
-    background-color: #fff;
+    background-color: var(--card-bg);
     max-width: 700px;
     margin: 0 auto 10px auto;
     padding: 15px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px var(--card-shadow);
     max-height: 400px;
     overflow-y: auto;
 }
@@ -202,36 +270,38 @@ form {
     margin: 5px 0;
 }
 
-/* --- Login & Signup --- */
+/* ------------------- LOGIN & SIGNUP ------------------- */
 form input[type="text"],
 form input[type="password"] {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
 }
 
-/* --- Maintenance Page --- */
+/* ------------------- MAINTENANCE PAGE ------------------- */
 .maintenance-container {
     max-width: 600px;
     margin: 100px auto;
-    background: #fff;
+    background: var(--card-bg);
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px var(--card-shadow);
     text-align: center;
 }
 
 .maintenance-container h1 {
     font-size: 2.5em;
     margin-bottom: 20px;
-    color: #2c3e50;
+    color: var(--text-color);
 }
 
 .maintenance-container p {
     font-size: 1.2em;
-    color: #555;
+    color: var(--text-color);
 }
 
 .maintenance-container .logo {
@@ -239,7 +309,7 @@ form input[type="password"] {
     margin-bottom: 30px;
 }
 
-/* --- Responsive --- */
+/* ------------------- RESPONSIVE ------------------- */
 @media (max-width: 768px) {
     .feed-container,
     .chat-box {
