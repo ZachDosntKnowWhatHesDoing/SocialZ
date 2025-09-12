@@ -1,8 +1,57 @@
+from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
+
+# --- Role system helper ---
+def role_required(role):
+    def wrapper(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if "user" not in session:
+                flash("You must be logged in.")
+                return redirect(url_for("login"))
+
+            username = session["user"]
+            user_role = users.get(username, {}).get("role", "user")
+
+            # Allow if role matches OR if admin (admins override)
+            if user_role != role and user_role != "admin":
+                flash("You don’t have permission to do that.")
+                return redirect(url_for("index"))
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return wrapper
+
+
+# --- Mod Panel ---
+@app.route("/mod-panel")
+@role_required("mod")
+def mod_panel():
+    return render_template("mod_panel.html", users=users, posts=posts)
+
+
+# --- Admin Panel ---
+@app.route("/admin-panel")
+@role_required("admin")
+def admin_panel():
+    return render_template("admin_panel.html", users=users, posts=posts)
+
+
+# --- Promote/Demote users (Admin only) ---
+@app.route("/set-role/<username>/<role>")
+@role_required("admin")
+def set_role(username, role):
+    if username in users:
+        users[username]["role"] = role
+        save_users()  # make sure you have a save_users() that writes to users.json
+        flash(f"{username} is now {role}.")
+    else:
+        flash("User not found.")
+    return redirect(url_for("admin_panel"))
 
 # ---------------- App Setup -----------------
 app = Flask(__name__)
