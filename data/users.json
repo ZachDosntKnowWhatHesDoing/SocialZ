@@ -1,10 +1,12 @@
 {
     "Admin": {
+        "role": "admin"
         "password": "z1a2c3h4",
         "profile_pic": "Admin_494690127_568807742954894_728037580640328747_n.jpg",
         "bio": "balls"
     },
     "Papyrus": {
+        "role": "admin"
         "password": "696969",
         "profile_pic": null,
         "bio": ""
