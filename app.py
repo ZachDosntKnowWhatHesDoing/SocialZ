@@ -74,14 +74,6 @@ class Message(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
 
-class Notification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50))
-    from_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    read = db.Column(db.Boolean, default=False)
-
 # ---------------- Jinja Utils -----------------
 @app.context_processor
 def utility_processor():
@@ -270,18 +262,6 @@ def dm(username):
         ((Message.sender==target) & (Message.receiver==user))
     ).all()
     return render_template('dm.html', messages=msgs, chat_with=target.username)
-
-# ---------------- Notifications -----------------
-@app.route('/notifications')
-def notifications_page():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    notifs = Notification.query.filter_by(user=user).all()
-    for n in notifs:
-        n.read = True
-    db.session.commit()
-    return render_template('notifications.html', notifications=notifs)
 
 # --- Role system helper ---
 def role_required(role):
