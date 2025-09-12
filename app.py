@@ -47,7 +47,7 @@ class User(db.Model):
 
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
     messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
-    notifications = db.relationship('Notification', backref='user', lazy=True)
+    # notifications = db.relationship('Notification', backref='user', lazy=True)
     
     def is_mod(self):
         return self.username in ['terminator', 'Admin']
