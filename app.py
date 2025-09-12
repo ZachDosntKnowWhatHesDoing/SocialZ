@@ -7,6 +7,8 @@ import os
 
 # ---------------- App Setup -----------------
 app = Flask(__name__)
+if __name__ == "__main__":
+    app.run(debug=True)
 app.secret_key = "supersecretkey"
 app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 app.config['POST_IMAGE_FOLDER'] = 'static/post_images'
