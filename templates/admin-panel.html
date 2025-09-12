@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Admin Panel</h2>
+
+<div class="dashboard">
+    <div class="card">
+        <h3>Moderator Tools</h3>
+        <a href="{{ url_for('mod_panel') }}" class="btn">Go to Mod Panel</a>
+    </div>
+
+    <div class="card">
+        <h3>Manage Users</h3>
+        <ul>
+            {% for username, udata in users.items() %}
+                <li>
+                    {{ username }} ({{ udata.role }})
+                    {% if udata.role != "admin" %}
+                        <a href="{{ url_for('set_role', username=username, role='mod') }}" class="btn">Make Mod</a>
+                        <a href="{{ url_for('set_role', username=username, role='user') }}" class="btn">Make User</a>
+                        <a href="{{ url_for('set_role', username=username, role='banned') }}" class="btn-danger">Ban</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
