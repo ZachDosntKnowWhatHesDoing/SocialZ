@@ -1,9 +1,28 @@
+import os
+import json
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from PIL import Image
-import os
+
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
+app.config['POST_IMAGE_FOLDER'] = 'static/post_images'
+DATA_FOLDER = 'data'
+
+os.makedirs(DATA_FOLDER, exist_ok=True)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['POST_IMAGE_FOLDER'], exist_ok=True)
+
+USERS_FILE = os.path.join(DATA_FOLDER, 'users.json')
+POSTS_FILE = os.path.join(DATA_FOLDER, 'posts.json')
+FOLLOWERS_FILE = os.path.join(DATA_FOLDER, 'followers.json')
+MESSAGES_FILE = os.path.join(DATA_FOLDER, 'messages.json')
+NOTIFICATIONS_FILE = os.path.join(DATA_FOLDER, 'notifications.json')
+
+BLACKLIST = ["Zach", "Creator", "Owner", "Admin123", "Administrator", "Root", "God", "Mod"]
+MODS = ['terminator', 'Admin']
 
 # --- Role system helper ---
 def role_required(role):
@@ -53,104 +72,69 @@ def set_role(username, role):
         flash("User not found.")
     return redirect(url_for("admin_panel"))
 
-# ---------------- App Setup -----------------
-app = Flask(__name__)
-app.secret_key = "supersecretkey"
-app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
-app.config['POST_IMAGE_FOLDER'] = 'static/post_images'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "sqlite:///local.db")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# ---------------- JSON helpers -----------------
+def load_json(path):
+    if os.path.exists(path) and os.path.getsize(path) > 0:
+        with open(path, 'r') as f:
+            return json.load(f)
+    return {}
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['POST_IMAGE_FOLDER'], exist_ok=True)
+def save_json(path, data):
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=4)
 
-db = SQLAlchemy(app)
+# ---------------- Load all data -----------------
+users = load_json(USERS_FILE)
+posts_data = load_json(POSTS_FILE)
+posts = posts_data.get('posts', [])
+followers = load_json(FOLLOWERS_FILE)
+messages = load_json(MESSAGES_FILE)
+notifications = load_json(NOTIFICATIONS_FILE)
 
-# ---------------- Database Models -----------------
-followers_table = db.Table('followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-)
+# Ensure posts have IDs, likes, comments
+next_id = 1
+for p in posts:
+    if 'id' not in p:
+        p['id'] = next_id
+        next_id += 1
+    else:
+        next_id = max(next_id, p['id'] + 1)
+    if 'likes' not in p:
+        p['likes'] = []
+    if 'comments' not in p:
+        p['comments'] = []
 
-likes_table = db.Table('likes',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id'))
-)
+# ---------------- Save notifications -----------------
+def save_notifications():
+    save_json(NOTIFICATIONS_FILE, notifications)
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
-    bio = db.Column(db.Text, default="")
-    profile_pic = db.Column(db.String(120), nullable=True)
-    
-    posts = db.relationship('Post', backref='author', lazy=True)
-    following = db.relationship('User',
-                                secondary=followers_table,
-                                primaryjoin=id==followers_table.c.follower_id,
-                                secondaryjoin=id==followers_table.c.followed_id,
-                                backref='followers')
-
-    messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
-    messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
-    notifications = db.relationship('Notification', backref='user', lazy=True)
-    
-    def is_mod(self):
-        return self.username in ['terminator', 'Admin']
-
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=True)
-    image = db.Column(db.String(120), nullable=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    comments = db.relationship('Comment', backref='post', lazy=True)
-    likes = db.relationship('User', secondary=likes_table, backref='liked_posts')
-
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
-    author = db.relationship('User', backref='comments')
-
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-
-class Notification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50))
-    from_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    read = db.Column(db.Boolean, default=False)
-
-# ---------------- Jinja Utils -----------------
+# ---------------- Jinja utils -----------------
 @app.context_processor
 def utility_processor():
-    def get_profile_pic(user):
-        if user.profile_pic:
-            return url_for('static', filename='profile_pics/' + user.profile_pic)
+    def get_profile_pic(username):
+        if users.get(username) and users[username].get('profile_pic'):
+            return url_for('static', filename='profile_pics/' + users[username]['profile_pic'])
         return url_for('static', filename='profile_pics/default.png')
 
-    def display_name(user):
-        if user.is_mod():
-            return f"{user.username} [MOD]"
-        return user.username
+    def display_name(username):
+        if username in MODS:
+            return f"{username} [MOD]"
+        return username
 
-    return dict(get_profile_pic=get_profile_pic, display_name=display_name)
+    return dict(get_profile_pic=get_profile_pic, display_name=display_name, notifications=notifications)
 
 # ---------------- Routes -----------------
 @app.route('/')
 def index():
-    if 'user_id' in session:
-        user = User.query.get(session['user_id'])
-        feed = Post.query.order_by(Post.id.desc()).limit(20).all()
-        return render_template('index.html', user=user, feed=feed)
+    if 'user' in session:
+        username = session['user']
+        feed = sorted(posts[-20:], key=lambda x: x['id'], reverse=True)
+        return render_template('index.html', user=username, feed=feed)
     return redirect(url_for('login'))
+
+@app.route('/posts')
+def fetch_posts():
+    return jsonify(posts)
 
 # ---------------- Signup/Login/Logout -----------------
 @app.route('/signup', methods=['GET', 'POST'])
@@ -158,178 +142,242 @@ def signup():
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password']
-        if User.query.filter_by(username=username).first():
-            flash("Username already exists")
-        elif username.lower() in ["zach", "creator", "owner", "admin123", "administrator", "root", "god", "mod"]:
-            flash("This username is not allowed")
+        if username in users:
+            flash('Username already exists')
+        elif username in BLACKLIST or username.lower() in [u.lower() for u in users.keys() if u != "Admin"]:
+            flash('This username is not allowed')
         else:
-            new_user = User(username=username, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-            session['user_id'] = new_user.id
+            users[username] = {'password': password, 'profile_pic': None, 'bio': ''}
+            followers[username] = []
+            messages[username] = []
+            notifications[username] = []
+            save_json(USERS_FILE, users)
+            save_json(FOLLOWERS_FILE, followers)
+            save_json(MESSAGES_FILE, messages)
+            save_notifications()
+            session['user'] = username
             return redirect(url_for('index'))
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method=='POST':
+    if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
-            session['user_id'] = user.id
+        if username in users and users[username]['password'] == password:
+            session['user'] = username
             return redirect(url_for('index'))
-        flash("Invalid username or password")
+        flash('Invalid username or password')
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
+    session.pop('user', None)
     return redirect(url_for('login'))
 
 # ---------------- Profile -----------------
 @app.route('/profile/<username>')
 def profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    feed = Post.query.order_by(Post.id.desc()).all()
-    return render_template('profile.html', user=user, feed=feed, followers=user.followers, data=user)
+    if username not in users:
+        return "User not found"
+    user_data = users[username]
+    user_followers = [u for u, f in followers.items() if username in f]
+    feed = sorted(posts, key=lambda x: x['id'], reverse=True)
+    return render_template('profile.html', user=username, data=user_data, followers=user_followers, feed=feed)
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
-    if 'user_id' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    if request.method=='POST':
-        user.bio = request.form['bio']
+    username = session['user']
+    if request.method == 'POST':
+        bio = request.form['bio']
+        users[username]['bio'] = bio
         if 'profile_pic' in request.files:
             pic = request.files['profile_pic']
             if pic.filename != '':
-                filename = secure_filename(user.username + "_" + pic.filename)
+                filename = secure_filename(username + "_" + pic.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 pic.save(filepath)
                 img = Image.open(filepath)
                 img = img.resize((40, 40), Image.Resampling.LANCZOS)
                 img.save(filepath)
-                user.profile_pic = filename
-        db.session.commit()
-        return redirect(url_for('profile', username=user.username))
-    return render_template('edit_profile.html', data=user)
+                users[username]['profile_pic'] = filename
+        save_json(USERS_FILE, users)
+        return redirect(url_for('profile', username=username))
+    return render_template('edit_profile.html', data=users[username])
+
+# ---------------- Follow/DM -----------------
+@app.route('/follow/<username>')
+def follow(username):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    follower = session['user']
+    if username in users and username != follower:
+        if username not in followers[follower]:
+            followers[follower].append(username)
+            save_json(FOLLOWERS_FILE, followers)
+
+            # Notify user
+            notifications.setdefault(username, []).append({
+                "type": "follow",
+                "from": follower,
+                "read": False
+            })
+            save_notifications()
+
+    return redirect(url_for('profile', username=username))
+
+@app.route('/dm/<username>', methods=['GET', 'POST'])
+def dm(username):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    sender = session['user']
+    if username not in users:
+        return "User not found"
+    if request.method == 'POST':
+        message = request.form['message']
+        messages[username].append({'from': sender, 'message': message})
+        messages[sender].append({'from': sender, 'message': message})
+        save_json(MESSAGES_FILE, messages)
+
+        # Notify receiver
+        if username != sender:
+            notifications.setdefault(username, []).append({
+                "type": "dm",
+                "from": sender,
+                "read": False
+            })
+            save_notifications()
+
+        return redirect(url_for('dm', username=username))
+    dm_list = [m for m in messages[username] if m['from'] == username or m['from'] == sender]
+    return render_template('dm.html', chat_with=username, messages=dm_list)
 
 # ---------------- Posts -----------------
+def get_post(post_id):
+    for p in posts:
+        if p['id'] == post_id:
+            return p
+    return None
+
 @app.route('/post', methods=['POST'])
 def create_post():
-    if 'user_id' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
+
     content = request.form['content'].strip()
     image_file = None
+
     if 'post_image' in request.files:
         pic = request.files['post_image']
         if pic.filename != '':
-            filename = secure_filename(user.username + "_" + pic.filename)
+            filename = secure_filename(session['user'] + "_" + pic.filename)
             filepath = os.path.join(app.config['POST_IMAGE_FOLDER'], filename)
             pic.save(filepath)
             img = Image.open(filepath)
-            img.thumbnail((600,600), Image.Resampling.LANCZOS)
+            img.thumbnail((600, 600), Image.Resampling.LANCZOS)
             img.save(filepath)
             image_file = filename
-    new_post = Post(content=content, image=image_file, author=user)
-    db.session.add(new_post)
-    db.session.commit()
+
+    if content or image_file:
+        post_id = (posts[-1]['id'] + 1) if posts else 1
+        posts.append({
+            'id': post_id,
+            'author': session['user'],
+            'content': content,
+            'image': image_file,
+            'likes': [],
+            'comments': []
+        })
+        save_json(POSTS_FILE, {'posts': posts})
+
     return redirect(url_for('index'))
 
 @app.route('/like/<int:post_id>')
 def like_post(post_id):
-    if 'user_id' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    post = Post.query.get_or_404(post_id)
-    if user in post.likes:
-        post.likes.remove(user)
-    else:
-        post.likes.append(user)
-        if user != post.author:
-            notif = Notification(type="like", from_user_id=user.id, user_id=post.author.id, post_id=post.id)
-            db.session.add(notif)
-    db.session.commit()
+    post = get_post(post_id)
+    if post:
+        user = session['user']
+        if user in post['likes']:
+            post['likes'].remove(user)
+        else:
+            post['likes'].append(user)
+
+            # Notify author
+            if post['author'] != user:
+                notifications.setdefault(post['author'], []).append({
+                    "type": "like",
+                    "from": user,
+                    "post_id": post_id,
+                    "read": False
+                })
+                save_notifications()
+
+        save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
 @app.route('/comment/<int:post_id>', methods=['POST'])
 def comment_post(post_id):
-    if 'user_id' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    post = Post.query.get_or_404(post_id)
-    comment_text = request.form['comment'].strip()
-    if comment_text:
-        comment = Comment(content=comment_text, author=user, post=post)
-        db.session.add(comment)
-        if user != post.author:
-            notif = Notification(type="comment", from_user_id=user.id, user_id=post.author.id, post_id=post.id)
-            db.session.add(notif)
-        db.session.commit()
+    post = get_post(post_id)
+    if post:
+        comment_text = request.form['comment'].strip()
+        if comment_text:
+            post['comments'].append({'author': session['user'], 'comment': comment_text})
+
+            # Notify author
+            if post['author'] != session['user']:
+                notifications.setdefault(post['author'], []).append({
+                    "type": "comment",
+                    "from": session['user'],
+                    "post_id": post_id,
+                    "read": False
+                })
+                save_notifications()
+
+            save_json(POSTS_FILE, {'posts': posts})
     return redirect(url_for('index'))
 
 @app.route('/delete_post/<int:post_id>')
 def delete_post(post_id):
-    if 'user_id' not in session:
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    post = Post.query.get_or_404(post_id)
-    if user.is_mod() or post.author==user:
-        db.session.delete(post)
-        db.session.commit()
+
+    post = get_post(post_id)
+    current_user = session['user']
+
+    if post:
+        if current_user == 'Admin':
+            posts.remove(post)
+        elif current_user == 'terminator' and post['author'] != 'Admin':
+            posts.remove(post)
+        elif post['author'] == current_user:
+            posts.remove(post)
+
+        if post not in posts:
+            save_json(POSTS_FILE, {'posts': posts})
+
     return redirect(url_for('index'))
 
-# ---------------- Follow -----------------
-@app.route('/follow/<username>')
-def follow(username):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    target = User.query.filter_by(username=username).first_or_404()
-    if target != user and target not in user.following:
-        user.following.append(target)
-        notif = Notification(type="follow", from_user_id=user.id, user_id=target.id)
-        db.session.add(notif)
-        db.session.commit()
-    return redirect(url_for('profile', username=username))
-
-# ---------------- DM -----------------
-@app.route('/dm/<username>', methods=['GET','POST'])
-def dm(username):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    target = User.query.filter_by(username=username).first_or_404()
-    if request.method=='POST':
-        msg_text = request.form['message'].strip()
-        if msg_text:
-            message = Message(sender=user, receiver=target, content=msg_text)
-            db.session.add(message)
-            notif = Notification(type="dm", from_user_id=user.id, user_id=target.id)
-            db.session.add(notif)
-            db.session.commit()
-        return redirect(url_for('dm', username=username))
-    msgs = Message.query.filter(
-        ((Message.sender==user) & (Message.receiver==target)) |
-        ((Message.sender==target) & (Message.receiver==user))
-    ).all()
-    return render_template('dm.html', messages=msgs, chat_with=target.username)
-
-# ---------------- Notifications -----------------
+# ---------------- Notifications page -----------------
 @app.route('/notifications')
-def notifications_page():
-    if 'user_id' not in session:
+def view_notifications():
+    if 'user' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    notifs = Notification.query.filter_by(user=user).all()
-    for n in notifs:
-        n.read = True
-    db.session.commit()
-    return render_template('notifications.html', notifications=notifs)
+    user = session['user']
+    user_notifications = notifications.get(user, [])
+
+    # Mark all as read
+    for n in user_notifications:
+        n['read'] = True
+    save_notifications()
+
+    return render_template('notifications.html', notifications=user_notifications)
 
 # ---------------- Run -----------------
-if __name__=="__main__":
-    db.create_all()
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
